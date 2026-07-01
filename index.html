@@ -27,22 +27,27 @@
 
   .wrap{display:flex;gap:14px;padding:0 16px 20px;align-items:flex-start;flex-wrap:wrap}
   .stagebox{flex:1 1 620px;min-width:280px;border:1px solid var(--line);border-radius:14px;background:#10151e;overflow:hidden}
-  .stage{position:relative;width:100%;aspect-ratio:1100/720;
+  .stage{position:relative;width:100%;aspect-ratio:1000/1150;
     background-image:linear-gradient(#171e2a 1px,transparent 1px),linear-gradient(90deg,#171e2a 1px,transparent 1px);
     background-size:28px 28px;background-color:#0f141d}
   .room{position:absolute;border:1.5px solid;border-radius:12px}
-  .room .tag{position:absolute;top:6px;left:9px;font-size:11px;font-weight:700;opacity:.85}
+  .room .tag{position:absolute;top:5px;left:8px;font-size:10px;font-weight:700;opacity:.85}
   .r-analysis{border-color:var(--analysis)} .r-analysis .tag{color:#7fb0ff}
   .r-mkt{border-color:var(--mkt)} .r-mkt .tag{color:#ff9d8c}
   .r-lib{border-color:var(--lib)} .r-lib .tag{color:#e8d27a}
   .r-commerce{border-color:var(--commerce)} .r-commerce .tag{color:#5fe0c0}
   .r-leader{border-color:var(--leader)} .r-leader .tag{color:#c3b2ff}
 
-  .agent{position:absolute;transform:translate(-50%,-50%);text-align:center;cursor:pointer;width:74px;z-index:3}
+  .agent{position:absolute;transform:translate(-50%,-50%);text-align:center;cursor:pointer;width:24%;max-width:96px;z-index:3}
   .agent .av{width:44px;height:44px;margin:0 auto;border-radius:12px;display:grid;place-items:center;
     font-size:23px;background:#1c2433;border:2px solid #3a4760;transition:.15s}
-  .agent .nm{margin-top:4px;font-size:11px;font-weight:700;white-space:nowrap}
+  .agent .nm{margin-top:4px;font-size:11px;font-weight:700;line-height:1.1;white-space:normal;word-break:keep-all}
   .agent .cmd{font-size:9px;color:var(--sub);font-family:ui-monospace,monospace}
+  @media (max-width:620px){
+    .agent .av{width:38px;height:38px;font-size:19px}
+    .agent .nm{font-size:9.5px}
+    .agent .cmd{display:none}
+  }
   .agent.sel .av{border-color:#fff;box-shadow:0 0 0 3px rgba(55,224,194,.5)}
   .agent.dim{opacity:.32}
   .agent.bob .av{animation:bob 2.4s ease-in-out infinite}
@@ -76,7 +81,6 @@
     padding:0 16px;height:44px;font-weight:700;font-size:14px;cursor:pointer}
   .composer button:disabled{opacity:.5}
 
-  /* setup overlay */
   .overlay{position:fixed;inset:0;background:rgba(5,8,13,.86);display:none;place-items:center;z-index:50;padding:16px}
   .overlay.show{display:grid}
   .setup{background:#161b22;border:1px solid var(--line);border-radius:18px;padding:24px;max-width:440px;width:100%}
@@ -117,12 +121,12 @@
 <div class="wrap">
   <div class="stagebox">
     <div class="stage" id="stage">
-      <div class="room r-leader"   style="left:40%;top:3%;width:20%;height:20%"><span class="tag">대표 직속</span></div>
-      <div class="room r-analysis" style="left:3%;top:30%;width:40%;height:64%"><span class="tag">📊 분석팀</span></div>
-      <div class="room r-mkt"      style="left:47%;top:30%;width:32%;height:32%"><span class="tag">📣 마케팅팀</span></div>
-      <div class="room r-lib"      style="left:47%;top:66%;width:32%;height:28%"><span class="tag">📚 도서관</span></div>
-      <div class="room r-commerce" style="left:82%;top:30%;width:15%;height:64%"><span class="tag">🛍️ 커머스</span></div>
-      <svg class="flow" id="flow" viewBox="0 0 1100 720" preserveAspectRatio="none"></svg>
+      <div class="room r-leader"   style="left:30%;top:2%;width:40%;height:12%"><span class="tag">대표 직속</span></div>
+      <div class="room r-analysis" style="left:3%;top:17%;width:94%;height:26%"><span class="tag">📊 분석팀</span></div>
+      <div class="room r-mkt"      style="left:3%;top:47%;width:45%;height:24%"><span class="tag">📣 마케팅팀</span></div>
+      <div class="room r-lib"      style="left:52%;top:47%;width:45%;height:24%"><span class="tag">📚 도서관</span></div>
+      <div class="room r-commerce" style="left:3%;top:75%;width:94%;height:22%"><span class="tag">🛍️ 커머스</span></div>
+      <svg class="flow" id="flow" viewBox="0 0 1000 1150" preserveAspectRatio="none"></svg>
     </div>
   </div>
 
@@ -146,7 +150,6 @@
   </div>
 </div>
 
-<!-- 키 설정 오버레이 -->
 <div class="overlay" id="overlay">
   <div class="setup">
     <h2>🔑 Gemini API 키 설정</h2>
@@ -168,21 +171,21 @@
 
 <script>
 const AGENTS = {
-  leader:     {x:50,y:13,emoji:"🧭",name:"리더",cmd:"/leader",
+  leader:     {x:50,y:8,emoji:"🧭",name:"리더",cmd:"/leader",
     sys:"너는 Feura Brain 퍼포먼스 마케팅 팀의 오케스트레이터 '리더'다. 지시를 받아 적합한 에이전트에게 작업을 분배할지 정하고, 전체 관점에서 핵심을 교차 검증해 간결한 최종 보고로 정리한다. 한국어로 실무자가 바로 읽게 답한다."},
-  channel:    {x:13,y:46,emoji:"📊",name:"채널 분석가",cmd:"/channel-analyst",
+  channel:    {x:20,y:32,emoji:"📊",name:"채널 분석가",cmd:"/channel-analyst",
     sys:"너는 채널 분석가다. META와 NAVER(SA·BS) 채널 성과를 분석하고 ROAS/CPA/예산 효율 기준으로 예산 재배분안을 제시한다. 숫자 근거를 들어 한국어로 간결히 답한다."},
-  creative:   {x:33,y:46,emoji:"🎨",name:"소재 분석가",cmd:"/creative-analyst",
+  creative:   {x:50,y:32,emoji:"🎨",name:"소재 분석가",cmd:"/creative-analyst",
     sys:"너는 소재 분석가다. 광고 소재별 성과(CTR/CVR/빈도)를 비교하고 피로도를 탐지해 교체 우선순위와 다음 소재 방향을 제안한다. 한국어로 간결히 답한다."},
-  conversion: {x:23,y:75,emoji:"🛒",name:"전환 분석가",cmd:"/conversion-analyst",
+  conversion: {x:80,y:32,emoji:"🛒",name:"전환 분석가",cmd:"/conversion-analyst",
     sys:"너는 전환 분석가다. CAFE24 퍼널 단계별 전환율, 매출, 이탈 구간을 진단하고 개선 포인트를 제시한다. 한국어로 간결히 답한다."},
-  performance:{x:55,y:46,emoji:"🚀",name:"퍼포먼스 마케터",cmd:"/퍼마",
+  performance:{x:16,y:60,emoji:"🚀",name:"퍼포먼스 마케터",cmd:"/퍼마",
     sys:"너는 퍼포먼스 마케터 '퍼마'다. 광고 전략, 플랫폼 운영, SEO, A/B 테스트 설계, 경쟁사 분석을 담당한다. 데이터가 있으면 근거로 삼아 실행 가능한 운영안을 한국어로 제시한다."},
-  content:    {x:71,y:46,emoji:"✍️",name:"콘텐츠 마케터",cmd:"/콘마",
+  content:    {x:36,y:60,emoji:"✍️",name:"콘텐츠 마케터",cmd:"/콘마",
     sys:"너는 콘텐츠 마케터 '콘마'다. 블로그, 바이럴, 인플루언서 협찬, CRM 콘텐츠 전략과 KPI를 다룬다. 채널별 콘텐츠안과 KPI 가설을 한국어로 제안한다."},
-  library:    {x:63,y:80,emoji:"📚",name:"도서관 관리자",cmd:"/ingest",
+  library:    {x:74,y:60,emoji:"📚",name:"도서관 관리자",cmd:"/ingest",
     sys:"너는 LLM Wiki 지식 도서관 관리자다. 분석 결과를 정리·적재하고 기존 기준선과 비교해 변화점을 표시한다. 한국어로 간결히 답한다."},
-  shopify:    {x:89,y:60,emoji:"🐱",name:"쇼피파이 비서",cmd:"/쇼피",
+  shopify:    {x:50,y:86,emoji:"🐱",name:"쇼피파이 비서",cmd:"/쇼피",
     sys:"너는 쇼피파이 드랍쉬핑 전문 비서 '쇼피'다. Meowsterpiece 스토어 셋업, 콘텐츠 양산, 자동화, 전략을 다룬다. 한국어로 실행 단계 중심으로 답한다."},
 };
 const ORDER=["channel","creative","conversion","performance","content","library","shopify"];
@@ -197,7 +200,6 @@ for(const [id,a] of Object.entries(AGENTS)){
 }
 function selectSel(id){Object.values(els).forEach(e=>e.classList.remove('sel'));els[id].classList.add('sel');}
 
-// selectors
 const fromSel=document.getElementById('fromSel'), toSel=document.getElementById('toSel');
 ['leader',...ORDER].forEach(id=>{const a=AGENTS[id];
   fromSel.insertAdjacentHTML('beforeend',`<option value="${id}">${a.emoji} ${a.name}</option>`);
@@ -205,9 +207,8 @@ const fromSel=document.getElementById('fromSel'), toSel=document.getElementById(
 fromSel.value='leader'; toSel.value='channel';
 fromSel.onchange=drawFlow; toSel.onchange=()=>{selectSel(toSel.value);drawFlow();};
 
-// modes + flow
 let mode='idle';
-const VB={w:1100,h:720};
+const VB={w:1000,h:1150};
 function center(id){const a=AGENTS[id];return {x:a.x/100*VB.w,y:a.y/100*VB.h};}
 function curve(p1,p2){const mx=(p1.x+p2.x)/2,my=(p1.y+p2.y)/2-40;return `M${p1.x},${p1.y} Q${mx},${my} ${p2.x},${p2.y}`;}
 function addPath(p1,p2,step){const ns='http://www.w3.org/2000/svg';
@@ -239,7 +240,6 @@ document.querySelectorAll('.modes button').forEach(b=>{b.onclick=()=>{
   document.querySelectorAll('.modes button').forEach(x=>x.classList.remove('active'));
   b.classList.add('active'); mode=b.dataset.mode; drawFlow();};});
 
-// chat
 const logEl=document.getElementById('log'), promptEl=document.getElementById('prompt'),
       sendBtn=document.getElementById('send'), chatTo=document.getElementById('chatTo');
 function addMsg(cls,html){const e=logEl.querySelector('.logempty');if(e)e.remove();
@@ -247,8 +247,7 @@ function addMsg(cls,html){const e=logEl.querySelector('.logempty');if(e)e.remove
   logEl.appendChild(d);logEl.scrollTop=logEl.scrollHeight;return d;}
 function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
-// CSV 첨부
-let attached=[]; // {name, text}
+let attached=[];
 const fileInput=document.getElementById('file'), fileInfo=document.getElementById('fileInfo');
 fileInput.onchange=async()=>{
   attached=[];
@@ -263,7 +262,6 @@ function dataContext(){
   return attached.map(a=>`### ${a.name}\n${a.text}`).join("\n\n");
 }
 
-// Gemini 직접 호출
 const KEY='feura_gemini_key';
 async function callGemini(system,user){
   const key=localStorage.getItem(KEY);
@@ -315,7 +313,6 @@ async function send(){
 sendBtn.onclick=send;
 promptEl.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();if(!sendBtn.disabled)send();}});
 
-// 설정 오버레이
 const overlay=document.getElementById('overlay'), keyInput=document.getElementById('keyInput'), setupMsg=document.getElementById('setupMsg');
 function openSetup(){keyInput.value=localStorage.getItem(KEY)||''; overlay.classList.add('show'); setupMsg.textContent='';}
 document.getElementById('gear').onclick=openSetup;
@@ -328,7 +325,6 @@ document.getElementById('saveKey').onclick=()=>{
 document.getElementById('clearKey').onclick=()=>{localStorage.removeItem(KEY);keyInput.value='';setupMsg.className='msg2';setupMsg.textContent='삭제되었습니다.';};
 overlay.onclick=e=>{if(e.target===overlay)overlay.classList.remove('show');};
 
-// init
 selectSel('channel'); drawFlow();
 if(!localStorage.getItem(KEY)) openSetup();
 </script>
