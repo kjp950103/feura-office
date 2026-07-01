@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Feura Brain · AI 사무실 (모바일)</title>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --line:#2b3340; --ink:#e6edf3; --sub:#8b949e;
+    --accent:#7c5cff; --accent2:#37e0c2;
+    --analysis:#2563eb; --mkt:#e0533d; --lib:#caa83a; --commerce:#16a085; --leader:#7c5cff;
+  }
+  *{box-sizing:border-box;font-family:'Pretendard','Apple SD Gothic Neo',system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:radial-gradient(circle at 30% 0%,#161d2b,#0d1117 60%);color:var(--ink);min-height:100vh}
+  header{display:flex;align-items:center;gap:10px;padding:12px 16px;flex-wrap:wrap}
+  header h1{font-size:16px;margin:0;letter-spacing:-.3px}
+  header .badge{font-size:10px;color:#5fe0c0;background:#143d2b;border:1px solid #1f6b4a;padding:2px 8px;border-radius:20px}
+  header .gear{margin-left:auto;background:#1a2130;border:1px solid var(--line);color:var(--sub);
+    border-radius:9px;padding:6px 11px;font-size:12px;cursor:pointer}
+  .modes{display:flex;gap:6px;padding:0 16px 6px;flex-wrap:wrap}
+  .modes button{cursor:pointer;border:1px solid var(--line);background:#1a2130;color:var(--sub);
+    padding:7px 12px;border-radius:9px;font-size:12px;font-weight:600}
+  .modes button.active{background:linear-gradient(135deg,var(--accent),#5b46c4);color:#fff;border-color:transparent}
+  .legend{display:flex;gap:10px;flex-wrap:wrap;padding:4px 16px 12px;font-size:11px;color:var(--sub)}
+  .legend span{display:flex;align-items:center;gap:5px}
+  .legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+
+  .wrap{display:flex;gap:14px;padding:0 16px 20px;align-items:flex-start;flex-wrap:wrap}
+  .stagebox{flex:1 1 620px;min-width:280px;border:1px solid var(--line);border-radius:14px;background:#10151e;overflow:hidden}
+  .stage{position:relative;width:100%;aspect-ratio:1100/720;
+    background-image:linear-gradient(#171e2a 1px,transparent 1px),linear-gradient(90deg,#171e2a 1px,transparent 1px);
+    background-size:28px 28px;background-color:#0f141d}
+  .room{position:absolute;border:1.5px solid;border-radius:12px}
+  .room .tag{position:absolute;top:6px;left:9px;font-size:11px;font-weight:700;opacity:.85}
+  .r-analysis{border-color:var(--analysis)} .r-analysis .tag{color:#7fb0ff}
+  .r-mkt{border-color:var(--mkt)} .r-mkt .tag{color:#ff9d8c}
+  .r-lib{border-color:var(--lib)} .r-lib .tag{color:#e8d27a}
+  .r-commerce{border-color:var(--commerce)} .r-commerce .tag{color:#5fe0c0}
+  .r-leader{border-color:var(--leader)} .r-leader .tag{color:#c3b2ff}
+
+  .agent{position:absolute;transform:translate(-50%,-50%);text-align:center;cursor:pointer;width:74px;z-index:3}
+  .agent .av{width:44px;height:44px;margin:0 auto;border-radius:12px;display:grid;place-items:center;
+    font-size:23px;background:#1c2433;border:2px solid #3a4760;transition:.15s}
+  .agent .nm{margin-top:4px;font-size:11px;font-weight:700;white-space:nowrap}
+  .agent .cmd{font-size:9px;color:var(--sub);font-family:ui-monospace,monospace}
+  .agent.sel .av{border-color:#fff;box-shadow:0 0 0 3px rgba(55,224,194,.5)}
+  .agent.dim{opacity:.32}
+  .agent.bob .av{animation:bob 2.4s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+  svg.flow{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
+  .flow path{fill:none;stroke:var(--accent2);stroke-width:2.4;stroke-linecap:round;stroke-dasharray:7 9;animation:dash 1s linear infinite}
+  @keyframes dash{to{stroke-dashoffset:-32}}
+  .flow .step{font:700 12px sans-serif;fill:#37e0c2}
+
+  .chatbox{flex:1 1 320px;min-width:280px;background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:13px;display:flex;flex-direction:column;gap:10px;min-height:360px}
+  .routebar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:11px;color:var(--sub)}
+  .routebar .arrow{color:var(--accent2);font-weight:700}
+  .routebar select{background:#0f141d;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:6px 8px;font-size:12px}
+  .chat-to{font-size:12px;color:var(--sub)} .chat-to b{color:#cdb8ff}
+  .log{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;max-height:52vh;padding-right:2px}
+  .logempty{color:var(--sub);font-size:12.5px;text-align:center;margin:auto;line-height:1.7}
+  .msg{font-size:13.5px;line-height:1.55;padding:9px 12px;border-radius:12px;max-width:92%;word-break:break-word;white-space:pre-wrap}
+  .msg.me{align-self:flex-end;background:linear-gradient(135deg,var(--accent),#5b46c4);color:#fff;border-bottom-right-radius:4px}
+  .msg.ag{align-self:flex-start;background:#1c2433;border:1px solid #2b3340;border-bottom-left-radius:4px}
+  .msg.ag .who{font-size:11px;font-weight:700;color:var(--accent2);margin-bottom:3px;display:block}
+  .msg.sys{align-self:center;background:transparent;color:var(--sub);font-size:11.5px;padding:2px}
+  .msg.ag.working{color:var(--sub);font-style:italic}
+  .attachbar{font-size:11px;color:var(--sub);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .attachbar label{background:#1a2130;border:1px solid var(--line);border-radius:8px;padding:5px 9px;cursor:pointer}
+  .attachbar .files{color:#5fe0c0}
+  .composer{display:flex;gap:8px;align-items:flex-end}
+  .composer textarea{flex:1;resize:none;background:#0f141d;border:1px solid var(--line);border-radius:12px;
+    color:var(--ink);padding:10px 12px;font-size:14px;line-height:1.4;font-family:inherit}
+  .composer button{background:linear-gradient(135deg,var(--accent),#5b46c4);color:#fff;border:none;border-radius:12px;
+    padding:0 16px;height:44px;font-weight:700;font-size:14px;cursor:pointer}
+  .composer button:disabled{opacity:.5}
+
+  /* setup overlay */
+  .overlay{position:fixed;inset:0;background:rgba(5,8,13,.86);display:none;place-items:center;z-index:50;padding:16px}
+  .overlay.show{display:grid}
+  .setup{background:#161b22;border:1px solid var(--line);border-radius:18px;padding:24px;max-width:440px;width:100%}
+  .setup h2{font-size:18px;margin:0 0 6px} .setup p{color:var(--sub);font-size:13px;line-height:1.6}
+  .setup a{color:#8b8cff}
+  .setup ol{padding-left:18px;margin:10px 0} .setup li{font-size:12.5px;color:#c9d2dc;line-height:1.7}
+  .setup code{background:#1c2433;padding:1px 5px;border-radius:5px;font-size:12px}
+  .setup input{width:100%;box-sizing:border-box;background:#0f141d;border:1px solid var(--line);border-radius:10px;
+    color:var(--ink);padding:12px;font-size:14px;font-family:ui-monospace,monospace;margin-top:10px}
+  .setup .row{display:flex;gap:8px;margin-top:14px}
+  .setup button{flex:1;background:linear-gradient(135deg,var(--accent),#5b46c4);color:#fff;border:none;border-radius:10px;
+    padding:12px;font-size:14px;font-weight:700;cursor:pointer}
+  .setup button.ghost{background:#1a2130;border:1px solid var(--line);color:var(--sub);flex:0 0 auto;padding:12px 14px}
+  .setup .msg2{margin-top:10px;font-size:12.5px;min-height:16px} .ok{color:#5fe0c0} .err{color:#ff9d8c}
+</style>
+</head>
+<body>
+<header>
+  <h1>🏢 Feura Brain · AI 사무실</h1>
+  <span class="badge" id="badge">Gemini</span>
+  <button class="gear" id="gear">⚙ 키 설정</button>
+</header>
+<div class="modes">
+  <span style="align-self:center;font-size:11px;color:var(--sub)">모드:</span>
+  <button data-mode="idle" class="active">대기</button>
+  <button data-mode="single">단일 지시</button>
+  <button data-mode="parallel">동시</button>
+  <button data-mode="chain">체인</button>
+</div>
+<div class="legend">
+  <span><i style="background:var(--leader)"></i>리더</span>
+  <span><i style="background:var(--analysis)"></i>분석팀</span>
+  <span><i style="background:var(--mkt)"></i>마케팅팀</span>
+  <span><i style="background:var(--lib)"></i>도서관</span>
+  <span><i style="background:var(--commerce)"></i>커머스</span>
+</div>
+
+<div class="wrap">
+  <div class="stagebox">
+    <div class="stage" id="stage">
+      <div class="room r-leader"   style="left:40%;top:3%;width:20%;height:20%"><span class="tag">대표 직속</span></div>
+      <div class="room r-analysis" style="left:3%;top:30%;width:40%;height:64%"><span class="tag">📊 분석팀</span></div>
+      <div class="room r-mkt"      style="left:47%;top:30%;width:32%;height:32%"><span class="tag">📣 마케팅팀</span></div>
+      <div class="room r-lib"      style="left:47%;top:66%;width:32%;height:28%"><span class="tag">📚 도서관</span></div>
+      <div class="room r-commerce" style="left:82%;top:30%;width:15%;height:64%"><span class="tag">🛍️ 커머스</span></div>
+      <svg class="flow" id="flow" viewBox="0 0 1100 720" preserveAspectRatio="none"></svg>
+    </div>
+  </div>
+
+  <div class="chatbox">
+    <div class="routebar" id="routebar">
+      <span>보내는 사람</span><select id="fromSel"></select>
+      <span class="arrow">→</span><span>받는 사람</span><select id="toSel"></select>
+    </div>
+    <div class="chat-to" id="chatTo" style="display:none"></div>
+    <div class="log" id="log">
+      <div class="logempty">캐릭터를 고르고 지시를 입력하세요.<br>예) “이번 주 소재 피로도 점검하고 교체안 줘”</div>
+    </div>
+    <div class="attachbar">
+      <label>📎 CSV 첨부<input id="file" type="file" accept=".csv,text/csv" multiple hidden></label>
+      <span class="files" id="fileInfo">첨부 없음</span>
+    </div>
+    <div class="composer">
+      <textarea id="prompt" rows="2" placeholder="지시를 입력하세요…"></textarea>
+      <button id="send">전송</button>
+    </div>
+  </div>
+</div>
+
+<!-- 키 설정 오버레이 -->
+<div class="overlay" id="overlay">
+  <div class="setup">
+    <h2>🔑 Gemini API 키 설정</h2>
+    <p>이 웹앱은 무료 <b>Google Gemini</b>로 작동합니다. 키는 <b>이 기기 브라우저에만</b> 저장되고 서버로 전송되지 않습니다.</p>
+    <ol>
+      <li><a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a> 접속 → 구글 로그인</li>
+      <li><b>Create API key</b> 클릭</li>
+      <li><code>AIza...</code> 키 복사 → 아래에 붙여넣기</li>
+    </ol>
+    <p style="font-size:12px">※ 무료 한도: 분당 10회 · 하루 250회. 카드 등록 불필요.</p>
+    <input id="keyInput" type="password" placeholder="AIza..." autocomplete="off">
+    <div class="row">
+      <button id="saveKey">저장</button>
+      <button class="ghost" id="clearKey">삭제</button>
+    </div>
+    <div class="msg2" id="setupMsg"></div>
+  </div>
+</div>
+
+<script>
+const AGENTS = {
+  leader:     {x:50,y:13,emoji:"🧭",name:"리더",cmd:"/leader",
+    sys:"너는 Feura Brain 퍼포먼스 마케팅 팀의 오케스트레이터 '리더'다. 지시를 받아 적합한 에이전트에게 작업을 분배할지 정하고, 전체 관점에서 핵심을 교차 검증해 간결한 최종 보고로 정리한다. 한국어로 실무자가 바로 읽게 답한다."},
+  channel:    {x:13,y:46,emoji:"📊",name:"채널 분석가",cmd:"/channel-analyst",
+    sys:"너는 채널 분석가다. META와 NAVER(SA·BS) 채널 성과를 분석하고 ROAS/CPA/예산 효율 기준으로 예산 재배분안을 제시한다. 숫자 근거를 들어 한국어로 간결히 답한다."},
+  creative:   {x:33,y:46,emoji:"🎨",name:"소재 분석가",cmd:"/creative-analyst",
+    sys:"너는 소재 분석가다. 광고 소재별 성과(CTR/CVR/빈도)를 비교하고 피로도를 탐지해 교체 우선순위와 다음 소재 방향을 제안한다. 한국어로 간결히 답한다."},
+  conversion: {x:23,y:75,emoji:"🛒",name:"전환 분석가",cmd:"/conversion-analyst",
+    sys:"너는 전환 분석가다. CAFE24 퍼널 단계별 전환율, 매출, 이탈 구간을 진단하고 개선 포인트를 제시한다. 한국어로 간결히 답한다."},
+  performance:{x:55,y:46,emoji:"🚀",name:"퍼포먼스 마케터",cmd:"/퍼마",
+    sys:"너는 퍼포먼스 마케터 '퍼마'다. 광고 전략, 플랫폼 운영, SEO, A/B 테스트 설계, 경쟁사 분석을 담당한다. 데이터가 있으면 근거로 삼아 실행 가능한 운영안을 한국어로 제시한다."},
+  content:    {x:71,y:46,emoji:"✍️",name:"콘텐츠 마케터",cmd:"/콘마",
+    sys:"너는 콘텐츠 마케터 '콘마'다. 블로그, 바이럴, 인플루언서 협찬, CRM 콘텐츠 전략과 KPI를 다룬다. 채널별 콘텐츠안과 KPI 가설을 한국어로 제안한다."},
+  library:    {x:63,y:80,emoji:"📚",name:"도서관 관리자",cmd:"/ingest",
+    sys:"너는 LLM Wiki 지식 도서관 관리자다. 분석 결과를 정리·적재하고 기존 기준선과 비교해 변화점을 표시한다. 한국어로 간결히 답한다."},
+  shopify:    {x:89,y:60,emoji:"🐱",name:"쇼피파이 비서",cmd:"/쇼피",
+    sys:"너는 쇼피파이 드랍쉬핑 전문 비서 '쇼피'다. Meowsterpiece 스토어 셋업, 콘텐츠 양산, 자동화, 전략을 다룬다. 한국어로 실행 단계 중심으로 답한다."},
+};
+const ORDER=["channel","creative","conversion","performance","content","library","shopify"];
+const stage=document.getElementById('stage'), flow=document.getElementById('flow'), els={};
+for(const [id,a] of Object.entries(AGENTS)){
+  const d=document.createElement('div');
+  d.className='agent bob'+(id==='leader'?' sel':'');
+  d.style.left=a.x+'%'; d.style.top=a.y+'%';
+  d.innerHTML=`<div class="av">${a.emoji}</div><div class="nm">${a.name}</div><div class="cmd">${a.cmd}</div>`;
+  d.onclick=()=>{ if(mode==='single'||mode==='idle'){toSel.value=id;} selectSel(id); drawFlow(); };
+  stage.appendChild(d); els[id]=d;
+}
+function selectSel(id){Object.values(els).forEach(e=>e.classList.remove('sel'));els[id].classList.add('sel');}
+
+// selectors
+const fromSel=document.getElementById('fromSel'), toSel=document.getElementById('toSel');
+['leader',...ORDER].forEach(id=>{const a=AGENTS[id];
+  fromSel.insertAdjacentHTML('beforeend',`<option value="${id}">${a.emoji} ${a.name}</option>`);
+  toSel.insertAdjacentHTML('beforeend',`<option value="${id}">${a.emoji} ${a.name}</option>`);});
+fromSel.value='leader'; toSel.value='channel';
+fromSel.onchange=drawFlow; toSel.onchange=()=>{selectSel(toSel.value);drawFlow();};
+
+// modes + flow
+let mode='idle';
+const VB={w:1100,h:720};
+function center(id){const a=AGENTS[id];return {x:a.x/100*VB.w,y:a.y/100*VB.h};}
+function curve(p1,p2){const mx=(p1.x+p2.x)/2,my=(p1.y+p2.y)/2-40;return `M${p1.x},${p1.y} Q${mx},${my} ${p2.x},${p2.y}`;}
+function addPath(p1,p2,step){const ns='http://www.w3.org/2000/svg';
+  const p=document.createElementNS(ns,'path');p.setAttribute('d',curve(p1,p2));flow.appendChild(p);
+  if(step){const t=document.createElementNS(ns,'text');t.setAttribute('class','step');
+    t.setAttribute('x',(p1.x+p2.x)/2);t.setAttribute('y',(p1.y+p2.y)/2-46);t.setAttribute('text-anchor','middle');
+    t.textContent=step;flow.appendChild(t);}}
+function drawFlow(){
+  flow.innerHTML=''; Object.values(els).forEach(e=>e.classList.remove('dim'));
+  if(mode==='single'||mode==='idle'){
+    const f=fromSel.value,t=toSel.value;
+    Object.keys(els).forEach(id=>{if(id!==f&&id!==t)els[id].classList.add('dim')});
+    if(f!==t) addPath(center(f),center(t));
+  } else if(mode==='parallel'){
+    ORDER.forEach(id=>addPath(center('leader'),center(id)));
+  } else if(mode==='chain'){
+    const seq=['leader',...ORDER];
+    for(let i=0;i<seq.length-1;i++) addPath(center(seq[i]),center(seq[i+1]),i+1);
+  }
+  updateTo();
+}
+function updateTo(){
+  const single=(mode==='single'||mode==='idle');
+  document.getElementById('routebar').style.display=single?'flex':'none';
+  chatTo.style.display=single?'none':'block';
+  if(!single) chatTo.innerHTML='받는 사람: <b>'+(mode==='parallel'?'전체 팀 (동시)':'리더 → 전체 팀 (순서)')+'</b>';
+}
+document.querySelectorAll('.modes button').forEach(b=>{b.onclick=()=>{
+  document.querySelectorAll('.modes button').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active'); mode=b.dataset.mode; drawFlow();};});
+
+// chat
+const logEl=document.getElementById('log'), promptEl=document.getElementById('prompt'),
+      sendBtn=document.getElementById('send'), chatTo=document.getElementById('chatTo');
+function addMsg(cls,html){const e=logEl.querySelector('.logempty');if(e)e.remove();
+  const d=document.createElement('div');d.className='msg '+cls;d.innerHTML=html;
+  logEl.appendChild(d);logEl.scrollTop=logEl.scrollHeight;return d;}
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// CSV 첨부
+let attached=[]; // {name, text}
+const fileInput=document.getElementById('file'), fileInfo=document.getElementById('fileInfo');
+fileInput.onchange=async()=>{
+  attached=[];
+  for(const f of fileInput.files){
+    let t=await f.text(); if(t.length>6000) t=t.slice(0,6000)+"\n...(생략)";
+    attached.push({name:f.name,text:t});
+  }
+  fileInfo.textContent=attached.length?attached.map(a=>a.name).join(', '):'첨부 없음';
+};
+function dataContext(){
+  if(!attached.length) return "(첨부 데이터 없음 — 전문 지식 기반으로 답하라)";
+  return attached.map(a=>`### ${a.name}\n${a.text}`).join("\n\n");
+}
+
+// Gemini 직접 호출
+const KEY='feura_gemini_key';
+async function callGemini(system,user){
+  const key=localStorage.getItem(KEY);
+  if(!key) return "[키 없음] 우측 상단 ⚙ 키 설정에서 Gemini 키를 저장하세요.";
+  const url="https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key="+encodeURIComponent(key);
+  const body={system_instruction:{parts:[{text:system}]},
+    contents:[{role:"user",parts:[{text:user}]}],
+    generationConfig:{maxOutputTokens:8192,thinkingConfig:{thinkingBudget:0}}};
+  try{
+    const r=await fetch(url,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});
+    const j=await r.json();
+    if(j.error) return "[Gemini 오류] "+(j.error.message||JSON.stringify(j.error));
+    const c=j.candidates&&j.candidates[0];
+    if(!c) return "(빈 응답 — 한도 초과나 안전필터일 수 있음)";
+    let t=((c.content&&c.content.parts)||[]).map(p=>p.text||"").join("\n").trim();
+    if(c.finishReason==="MAX_TOKENS") t+="\n\n…(길이 제한으로 잘림 — 짧게 나눠 물어보세요)";
+    return t||"(빈 응답)";
+  }catch(e){return "[요청 실패] "+e;}
+}
+function buildUser(prompt,sender){
+  const origin = (sender&&sender!=='대표') ? `[${sender}로부터의 지시]` : "[대표 지시]";
+  return `[참고 데이터]\n${dataContext()}\n\n${origin}\n${prompt}`;
+}
+function recipients(){
+  if(mode==='parallel') return ORDER.slice();
+  if(mode==='chain') return ['leader',...ORDER];
+  return [toSel.value];
+}
+async function send(){
+  const text=promptEl.value.trim(); if(!text) return;
+  if(!localStorage.getItem(KEY)){ openSetup(); return; }
+  addMsg('me',esc(text)); promptEl.value=''; sendBtn.disabled=true;
+  const teamMode=(mode==='parallel'||mode==='chain');
+  const senderName= teamMode ? '대표' : AGENTS[fromSel.value].name;
+  const targets=recipients();
+  targets.forEach(id=>els[id].classList.add('sel'));
+  addMsg('sys','· '+senderName+' → 요청 중 ·');
+  for(const id of targets){
+    const a=AGENTS[id];
+    const w=addMsg('ag working','<span class="who">'+a.emoji+' '+a.name+'</span>작업 중…');
+    const extra = (senderName!=='대표'&&!teamMode) ? `\n\n[협업 맥락] 이 지시는 '${senderName}'로부터 전달되었다. 동료의 요청으로 보고 네 전문 영역에서 처리하라.` : "";
+    const reply=await callGemini(a.sys+extra, buildUser(text,senderName));
+    w.classList.remove('working');
+    w.innerHTML='<span class="who">'+a.emoji+' '+a.name+'</span>'+esc(reply);
+    logEl.scrollTop=logEl.scrollHeight;
+  }
+  sendBtn.disabled=false;
+}
+sendBtn.onclick=send;
+promptEl.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();if(!sendBtn.disabled)send();}});
+
+// 설정 오버레이
+const overlay=document.getElementById('overlay'), keyInput=document.getElementById('keyInput'), setupMsg=document.getElementById('setupMsg');
+function openSetup(){keyInput.value=localStorage.getItem(KEY)||''; overlay.classList.add('show'); setupMsg.textContent='';}
+document.getElementById('gear').onclick=openSetup;
+document.getElementById('saveKey').onclick=()=>{
+  const k=keyInput.value.trim().replace(/^["']|["']$/g,'');
+  if(k.length<15){setupMsg.className='msg2 err';setupMsg.textContent='키가 너무 짧습니다. 전체를 붙여넣으세요.';return;}
+  localStorage.setItem(KEY,k); setupMsg.className='msg2 ok'; setupMsg.textContent='저장 완료!';
+  setTimeout(()=>overlay.classList.remove('show'),600);
+};
+document.getElementById('clearKey').onclick=()=>{localStorage.removeItem(KEY);keyInput.value='';setupMsg.className='msg2';setupMsg.textContent='삭제되었습니다.';};
+overlay.onclick=e=>{if(e.target===overlay)overlay.classList.remove('show');};
+
+// init
+selectSel('channel'); drawFlow();
+if(!localStorage.getItem(KEY)) openSetup();
+</script>
+</body>
+</html>
